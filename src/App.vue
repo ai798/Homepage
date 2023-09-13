@@ -31,6 +31,11 @@ const handlePost = async () => {
           message: res.errMsg,
         });
         console.log(res.errMsg);
+      } else {
+        ElMessage({
+          message: res.payload,
+          type: "success",
+        });
       }
       console.log(res);
     })
