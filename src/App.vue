@@ -9,7 +9,7 @@
     <div class="input-box">
       <el-input v-model="name" maxlength="16" placeholder="Name" />
       <el-input v-model="email" maxlength="32" placeholder="Email address" />
-      <el-button class="btn" :onClick="handlePost" type="primary"
+      <el-button color="#1454FF" class="btn" :onClick="handlePost" type="primary"
         >Reserve</el-button
       >
     </div>
@@ -34,41 +34,20 @@ const hasSuccess = ref(false);
 const pageOne = ref("");
 const hintText = ref("");
 const timeout = ref(null as any);
-const handlePost = () => {
-  axios
-    .post("http://localhost:8081/post_email", {
-      user_name: name.value,
-      email: email.value,
-    })
-    .then((res: any) => {
-      timeout.value = null;
-      if (res.data.errCode === -1) {
-        ElMessage.error({
-          customClass: "err_type",
-          message: res.data.errMsg,
-        });
-        // hintText.value = res.data.errMsg;
-      } else {
-        hasSuccess.value = true;
-      }
-      timeout.value = window.setTimeout(() => {
-        hasSuccess.value = false;
-      }, 1500);
-      console.log("res", res.data);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
-// const handlePost = async () => {
-//   postEmail({ user_name: name.value, email: email.value })
-//     .then((res) => {
+// const handlePost = () => {
+//   axios
+//     .post("http://localhost:8081/post_email", {
+//       user_name: name.value,
+//       email: email.value,
+//     })
+//     .then((res: any) => {
 //       timeout.value = null;
 //       if (res.data.errCode === -1) {
 //         ElMessage.error({
+//           customClass: "err_type",
 //           message: res.data.errMsg,
 //         });
-//         console.log(res.data.errMsg);
+//         // hintText.value = res.data.errMsg;
 //       } else {
 //         hasSuccess.value = true;
 //       }
@@ -78,12 +57,33 @@ const handlePost = () => {
 //       console.log("res", res.data);
 //     })
 //     .catch((err) => {
-//       ElMessage.error({
-//         message: err,
-//       });
+//       console.log(err);
 //     });
-//   console.log(name.value, email.value);
 // };
+const handlePost = async () => {
+  postEmail({ user_name: name.value, email: email.value })
+    .then((res) => {
+      timeout.value = null;
+      if (res.data.errCode === -1) {
+        ElMessage.error({
+          message: res.data.errMsg,
+        });
+        console.log(res.data.errMsg);
+      } else {
+        hasSuccess.value = true;
+      }
+      timeout.value = window.setTimeout(() => {
+        hasSuccess.value = false;
+      }, 1500);
+      console.log("res", res.data);
+    })
+    .catch((err) => {
+      ElMessage.error({
+        message: err,
+      });
+    });
+  console.log(name.value, email.value);
+};
 </script>
 <style scoped >
 img {
