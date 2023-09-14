@@ -63,12 +63,13 @@ const timeout = ref(null as any);
 const handlePost = async () => {
   postEmail({ user_name: name.value, email: email.value })
     .then((res) => {
+      console.log('res->>>',res);
       timeout.value = null;
       if (res.data.errCode === -1) {
         ElMessage.error({
           message: res.data.errMsg,
         });
-        console.log(res.data.errMsg);
+        console.log('res+++',res.data);
       } else {
         hasSuccess.value = true;
       }
