@@ -62,6 +62,7 @@ service.interceptors.response.use(
         axiosCancel.removePending(response.config);
         if (data.code === ResultEnum.SUCCESS) {
             // addAjaxLog(response);
+            console.log(data)
             return data;
         } else {
             // addAjaxErrorLog(response, data.message);
@@ -100,6 +101,7 @@ const request = {
         return new Promise((resolve, reject) => {
             service({ method, url, ...data, requestOptions: options })
                 .then((res) => {
+                    console.log('res',res)
                     resolve(res as unknown as Promise<T>);
                 })
                 .catch((e: Error | AxiosError) => {
