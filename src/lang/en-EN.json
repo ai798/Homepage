@@ -1,0 +1,15 @@
+{
+
+    "asp_tips_enter_video_link_a": "🔗 Youtube/TikTok video link",
+    "asp_tips_enter_video_link_b": "Please paste the website link of video here",
+    "asp_status_thinking": "Thinking...",
+    "asp_tips_guide_ask_question": "🧠 You can ask me any questions",
+    "asp_tips_guide_prompt": "💡Example: put forward your creative requirements, or add information about reference videos...",
+    "asp_toast_parsing_failed": "💔Parsing failed, please try again",
+    "asp_prompt_preliminary_content": "",
+    "asp_btn_new_chat": "+New Chat",
+    "asp_title_delete_chat": "Delete Chat?",
+    "asp_desc_delete_chat": "This will delete ",
+    "asp_btn_delete": "Delete",
+    "asp_btn_cancel": "Cancel"
+}

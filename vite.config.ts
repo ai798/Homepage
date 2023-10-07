@@ -56,7 +56,7 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
       resolve: {
           alias: {
               "~/": `${path.resolve(__dirname, "src")}/`,
-              "@": resolve("src")
+              '@': resolve('./src'),
           }
       },
       css: {
@@ -67,9 +67,28 @@ export default ({ command, mode }: ConfigEnv): UserConfig => {
           }
       },
       server: {
-          host: "0.0.0.0",
           port: 4000, // 服务端口号
-          open: true // 服务启动时是否自动打开浏览器
+          open: true, // 服务启动时是否自动打开浏览器
+          proxy:{
+            '/api': {
+                target: 'http://54.179.149.33:18008',
+                changeOrigin: true,
+                configure: (proxy) => {
+                    proxy.on('proxyReq', function (proxyReq, req, res, options) {
+                        // proxyReq.setHeader('cookie', cookie);
+                    });
+                }
+            },
+            '/test': {
+                target: 'http://localhost:8081',
+                changeOrigin: true,
+                configure: (proxy) => {
+                    proxy.on('proxyReq', function (proxyReq, req, res, options) {
+                        // proxyReq.setHeader('cookie', cookie);
+                    });
+                }
+            },
+          }
       },
       build: {
           reportCompressedSize: false,

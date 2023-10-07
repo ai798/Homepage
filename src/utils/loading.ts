@@ -1,4 +1,4 @@
-import { useLoading } from "../../hooks";
+import { useLoading } from "@/hooks";
 
 // const loading = useLoading({
 //     minTime: 500

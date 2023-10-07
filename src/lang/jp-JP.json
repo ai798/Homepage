@@ -1,0 +1,15 @@
+{
+
+    "asp_tips_enter_video_link_a": "🔗 Youtube/TikTokビデオリンク",
+    "asp_tips_enter_video_link_b": "ここにビデオのウェブサイトのリンクを貼り付けてください",
+    "asp_status_thinking": "考え...",
+    "asp_tips_guide_ask_question": "🧠 何でも質問してください",
+    "asp_tips_guide_prompt": "💡例: クリエイティブな要件を提案するか、参考ビデオに関する情報を追加します...",
+    "asp_toast_parsing_failed": "💔解析に失敗しました。もう一度お試しください。",
+    "asp_prompt_preliminary_content": "",
+    "asp_btn_new_chat": "+ 新しいチャット",
+    "asp_title_delete_chat": "チャットを削除しますか?",
+    "asp_desc_delete_chat": "これにより %s が削除されます",
+    "asp_btn_delete": "消去",
+    "asp_btn_cancel": "キャンセル"
+}

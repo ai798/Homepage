@@ -1,0 +1,15 @@
+{
+
+    "asp_tips_enter_video_link_a": "🔗 Youtube/TikTok 影片鏈接",
+    "asp_tips_enter_video_link_b": "請在此處貼上影片的網站鏈接",
+    "asp_status_thinking": "思維...",
+    "asp_tips_guide_ask_question": "🧠 有任何問題都可以問我",
+    "asp_tips_guide_prompt": "💡範例：提出您的創意要求，或補充參考影片資訊...",
+    "asp_toast_parsing_failed": "💔解析失敗，請重試",
+    "asp_prompt_preliminary_content": "",
+    "asp_btn_new_chat": "+新聊天",
+    "asp_title_delete_chat": "您想刪除聊天記錄嗎？",
+    "asp_desc_delete_chat": "這將刪除 %s",
+    "asp_btn_delete": "擦除",
+    "asp_btn_cancel": "取消"
+}

@@ -1,6 +1,6 @@
 import type { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import axios from "axios";
-import { useEnv } from "../../hooks";
+import { useEnv } from "@/hooks";
 import { ResultEnum, ContentTypeEnum } from "@/enums/httpEnum";
 // import { useUserStoreWithOut } from "@/stores/modules/user";
 import { setErrorMessage } from "./log";
@@ -34,7 +34,7 @@ const axiosLoading = new AxiosLoading();
 
 const service: AxiosInstance = axios.create({
     baseURL: VITE_BASE_API,
-    timeout: 10 * 1000, // 请求超时时间
+    timeout: 10 * 60 * 1000, // 请求超时时间
     headers: { "Content-Type": ContentTypeEnum.JSON }
 });
 
@@ -60,13 +60,14 @@ service.interceptors.response.use(
     (response: AxiosResponse) => {
         const data = response.data;
         axiosCancel.removePending(response.config);
-        if (data.code === ResultEnum.SUCCESS) {
+        if (response && response.status === ResultEnum.SUCCESS) {
             // addAjaxLog(response);
-            console.log(data)
+            return Promise.resolve(data);
+            console.log('anxius',data)
             return data;
         } else {
             // addAjaxErrorLog(response, data.message);
-            return Promise.reject(data);
+            return Promise.reject(response);
         }
     },
     (err) => {
@@ -94,7 +95,7 @@ const request = {
         return request.request("PUT", url, { data }, config);
     },
     delete<T = any>(url: string, data?: any, config?: axiosConfig): Promise<T> {
-        return request.request("DELETE", url, { params: data }, config);
+        return request.request("DELETE", url, { data }, config);
     },
     request<T = any>(method = "GET", url: string, data?: any, config?: axiosConfig): Promise<T> {
         const options = Object.assign({}, defaultConfig, config);
