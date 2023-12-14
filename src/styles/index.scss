@@ -1,0 +1,49 @@
+.is_inputing {
+
+
+  &>.vuepress-markdown-body>dd:last-child:after,
+  &>.vuepress-markdown-body>dl:last-child:after,
+  &>.vuepress-markdown-body>dt:last-child:after,
+  &>.vuepress-markdown-body>h1:last-child:after,
+  &>.vuepress-markdown-body>h2:last-child:after,
+  &>.vuepress-markdown-body>h3:last-child:after,
+  &>.vuepress-markdown-body>h4:last-child:after,
+  &>.vuepress-markdown-body>h5:last-child:after,
+  &>.vuepress-markdown-body>h6:last-child:after,
+  &>.vuepress-markdown-body>li:last-child:after,
+  &>.vuepress-markdown-body>ol:last-child li:last-child:after,
+  &>.vuepress-markdown-body>p:last-child:after,
+  &>.vuepress-markdown-body>pre:last-child code:after,
+  &>.vuepress-markdown-body>td:last-child:after,
+  &>.vuepress-markdown-body>ul:last-child li:last-child:after {
+    animation: blink 0.2s steps(5, start) infinite;
+    color: #000;
+    content: "▋";
+    font-weight: 700;
+    margin-left: 3px;
+    vertical-align: baseline;
+  }
+
+
+
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+
+}
+
+.is_inputing_conntent {
+  text-align: left;
+  margin-left: 20px;
+
+  &.is_inputing_conntent:after {
+    animation: blink 0.3s steps(5, start) infinite;
+    color: #000;
+    content: "▋";
+    font-weight: 700;
+    margin-left: 10px;
+    vertical-align: baseline;
+  }
+}

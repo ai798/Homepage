@@ -1,123 +1,180 @@
 <template>
-  <div ref="grab" class="container-box">
-    <div ref="container">
-      <div v-for="(item, index) in messageList" :key="index">
-        <div v-if="item.message_type === 0" class="people">
-          <span class="people_text">{{ item.content }}</span>
-        </div>
+  <div ref="grab" class="container-box" v-loading="isGetHistory">
+    <!-- <p id="response_row" v-if="fetchingResponse" class="result-streaming"></p> -->
 
-        <div v-else-if="item.message_type === 1" class="robot">
-          <v-md-preview :text="item.content"></v-md-preview>
+    <div class="err" v-if="isError">{{ errMsg }}</div>
+    <div class="outer-box" v-for="(item, index) in messageList" :key="index">
+      <div
+        v-if="
+          !Hidden.includes(item.message_type) &&
+          (item.is_bot === false ||
+            item.message_type === MessageType.CONVERSATION) &&
+          !item.is_link
+        "
+        class="people"
+      >
+        <span class="people_text">{{ item.content }}</span>
+      </div>
 
-          <!-- <span class="robot_content">{{ item.content }}</span> -->
-        </div>
-        <div v-else class="error">
-          {{ item.content }}
-        </div>
-      </div>
-      <div class="thinking" v-show="isWatiing">
-        {{ $t("asp_status_thinking") }}
-      </div>
+      <v-md-preview
+        v-else-if="item.is_bot && item.message_type === MessageType.REPALY"
+        class="robot"
+        :text="item.content"
+      ></v-md-preview>
     </div>
+
+    <div ref="container"></div>
+    <div v-if="isThinking" class="is_inputing_conntent"></div>
+
+    <slot name="option"></slot>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { sendMessage } from "@/api/index";
 import {
   EventStreamContentType,
   fetchEventSource,
 } from "@microsoft/fetch-event-source";
-import { reactive, ref, unref, watch } from "vue";
+import { MessageType, Hidden } from "@/enums/typeEnum";
+import { onMounted, reactive, ref, unref, watch } from "vue";
 import emitter from "@/utils/mitt";
+import { useStore } from "vuex";
+const ApplicationJsonType = "application/json";
 const fetchingResponse = ref(false);
 const isWatiing = ref(false);
-const grab = ref(null as any);
+const isThinking = ref(false);
+const isError = ref(false);
+const grab = ref();
+const errMsg = ref("");
+const container = ref();
 let ctrl = ref(null as any);
-const editor = ref(null as any);
-const messageQueue = [];
+const messageQueue = ref([] as any);
 const messageList = ref([] as any);
-let webSearchParams = {} as any;
 const enableWebSearch = ref(false);
+const { state, getters, dispatch, commit } = useStore();
+
+const refreshPage = () => {
+  setTimeout(() => {
+    container.value.scrollIntoView({ behavior: "smooth" });
+  }, 0);
+};
+const isUrl = (str: any) => {
+  var v = new RegExp(
+    "^(?!mailto:)(?:(?:http|https|ftp)://|//)(?:\\S+(?::\\S*)?@)?(?:(?:(?:[1-9]\\d?|1\\d\\d|2[01]\\d|22[0-3])(?:\\.(?:1?\\d{1,2}|2[0-4]\\d|25[0-5])){2}(?:\\.(?:[0-9]\\d?|1\\d\\d|2[0-4]\\d|25[0-4]))|(?:(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)(?:\\.(?:[a-z\\u00a1-\\uffff0-9]+-?)*[a-z\\u00a1-\\uffff0-9]+)*(?:\\.(?:[a-z\\u00a1-\\uffff]{2,})))|localhost)(?::\\d{2,5})?(?:(/|\\?|#)[^\\s]*)?$",
+    "i"
+  );
+  return v.test(str);
+};
+
+onMounted(() => {
+  refreshPage();
+});
 const props = defineProps({
   conversation: {
     type: Object as any,
     required: true,
   },
+  isGetHistory: {
+    type: Boolean,
+    require: true,
+  },
 });
-const emits = defineEmits(["done"]);
+const emits = defineEmits(["done","error"]);
 watch(
-  props.conversation,
-  (e) => {
-    if (e) {
-      console.log("props.conversation", props.conversation);
-      messageList.value = [...props.conversation.message];
+  messageList.value,
+  (val) => {
+    if (val.length) {
+      refreshPage();
     }
   },
   { immediate: true }
 );
+watch(
+  props.conversation,
+  (e) => {
+    if (e && props.isGetHistory) {
+      isError.value = false;
+      messageList.value = [];
+      messageList.value = messageList.value.concat(props.conversation.message);
+      container.value.scrollIntoView({ behavior: "smooth" });
+      // grab.value.scrollIntoView({ behavior: "smooth" });
+    }
+  },
+  { immediate: true }
+);
+let isProcessingQueue = false;
+let intervalId: any;
+const processMessageQueue = () => {
+  var doc = document.getElementsByClassName("vuepress-markdown-body")[0];
+  if (doc) {
+  }
+  if (isProcessingQueue || messageQueue.value.length === 0) {
+    return;
+  }
+  if (
+    props.conversation.message[props.conversation.message.length - 1]
+      .message_type === "10"
+  ) {
+    props.conversation.message.push({ id: null, is_bot: true, message: "" });
+  }
+  isProcessingQueue = true;
+  const nextMessage = messageQueue.value;
+  let wordIndex = 0;
+  messageList.value.push({ content: "", message_type: "10", is_bot: true });
+  console.log("mesageQueue->", messageQueue.value);
+  intervalId = setInterval(() => {
+    messageList.value[messageList.value.length - 1].content +=
+      nextMessage[wordIndex];
+    wordIndex++;
+    console.log("wordIndex->", wordIndex);
+    isThinking.value = false;
+    container.value.scrollIntoView({ behavior: "smooth" });
+    if (wordIndex === messageQueue.value.length) {
+      emits("done");
+      clearInterval(intervalId);
+      if (isUrl(props.conversation.message[0].content)) {
+        emitter.emit("refreshList");
+      }
+      messageQueue.value = [];
+      isWatiing.value = false;
+      isProcessingQueue = false;
+      // processMessageQueue();
+    }
+    // props.conversation.messages[props.conversation.messages.length - 1].message += nextMessage
+    // isProcessingQueue = false
+    // processMessageQueue()
+  }, 145);
+};
 const send = (message: any) => {
-  fetchingResponse.value = true;
-  messageList.value.push(...message.message);
-  console.log(messageList.value);
-  isWatiing.value = true;
+  // if (isWatiing.value) return;
+  // if (!message.message || message.message.trim() === "") return;
   if (props.conversation.messages) {
     // unknow
     // addConversation(props.conversation);
   }
-  //   if (Array.isArray(message)) {
-  //     props.conversation.message.push(
-  //       ...message.map((i) => ({
-  //         message: i.content,
-  //         message_type: i.message_type,
-  //       }))
-  //     );
-  //   } else {
-  //     props.conversation.message.push({
-  //       message: message.content,
-  //       message_type: message.message_type,
-  //     });
-  //   }
-  //   fetchReply(message);
-  sendMessage(message)
-    .then((res: any) => {
-      console.log(res);
-      let response = {};
-      if (res.payload) {
-        response = {
-          ...res.payload,
-          message_type: 1,
-        };
-      } else {
-        response = {
-          content: res.errMsg,
-          message_type: 2, //错误,
-        };
-      }
-      messageList.value.push(response);
-    })
-    .catch(() => {})
-    .finally(() => {
-      emits("done");
-      isWatiing.value = false;
-    });
+  messageList.value.push(...message.message);
+  fetchingResponse.value = true;
+  isWatiing.value = true;
+
+  fetchReply(message);
   scrollChatWindow();
 };
 const scrollChatWindow = () => {
   if (grab.value === null) {
     return;
   }
-  grab.value.scrollIntoView({ behavior: "smooth" });
+  // grab.value.scrollIntoView({ behavior: "smooth" });
 };
 const abortFetch = () => {
-  if (ctrl) {
-    ctrl.abort();
+  if (ctrl.value) {
+    ctrl.value.abort();
   }
   fetchingResponse.value = false;
 };
 
 const fetchReply = async (message: any) => {
-  ctrl = new AbortController();
+  messageQueue.value = [];
+  ctrl.value = new AbortController();
 
   let msg = message;
   if (Array.isArray(message)) {
@@ -151,19 +208,20 @@ const fetchReply = async (message: any) => {
       //   openaiApiKey:
       //     $settings.open_api_key_setting === "True" ? openaiApiKey.value : null,
       ...message,
-      conversationId: props.conversation.id,
+      conversation_id: props.conversation.conversation_id,
       //   frugalMode: frugalMode.value,
     },
     webSearchParams
   );
-
+  const getToken = window.localStorage.getItem("script_pro_token");
   try {
     await fetchEventSource("/api/conversation/", {
-      signal: ctrl.signal,
+      signal: ctrl.value.signal,
       method: "POST",
       headers: {
         accept: "application/json",
         "Content-Type": "application/json",
+        Authorization: `Bearer ${getToken}`,
       },
       body: JSON.stringify(data),
       openWhenHidden: true,
@@ -172,7 +230,6 @@ const fetchReply = async (message: any) => {
           response.ok &&
           response.headers.get("content-type") === EventStreamContentType
         ) {
-          console.log("response", response);
           return;
         }
         throw new Error(
@@ -180,7 +237,10 @@ const fetchReply = async (message: any) => {
         );
       },
       onclose() {
-        if (ctrl.signal.aborted === true) {
+        if (ctrl.value.signal.aborted === true) {
+          fetchingResponse.value = false;
+          clearInterval(intervalId);
+          emits("done", data.conversation_id);
           return;
         }
         throw new Error(
@@ -188,16 +248,28 @@ const fetchReply = async (message: any) => {
         );
       },
       onerror(err: any) {
+        console.log(err);
+        emits("error");
+        isWatiing.value = false;
+        isThinking.value = false;
+        isError.value = true;
+        errMsg.value = "Internal Server Error";
         throw err;
       },
       async onmessage(message: any) {
         const event = message.event;
+        console.log("event", event);
         const data = JSON.parse(message.data);
-
         if (event === "error") {
+          isError.value = true;
           abortFetch();
           //unknow
           //   showSnackbar(data.error);
+          let errObj = JSON.parse(message.data);
+          errMsg.value = errObj.errMsg;
+          isThinking.value = false;
+          commit("index/SET_ERROR_MSG", true);
+          emits("done", "err");
           return;
         }
 
@@ -209,37 +281,68 @@ const fetchReply = async (message: any) => {
 
         if (event === "done") {
           abortFetch();
+          console.log("done.data", data);
+          if (data.conversation_id) {
+            commit("index/SET_CONVERSION_ID", data.conversation_id);
+            props.conversation.conversation_id = data.conversation_id;
+          }
           props.conversation.message[props.conversation.message.length - 1].id =
             data.messageId;
           if (!props.conversation.id) {
             props.conversation.id = data.conversationId;
             // genTitle(props.conversation.id);
           }
-          if (data.newDocId) {
-            editor.value.refreshDocList();
-          }
           return;
         }
+        // const newDiv = document.createElement("p");
+        // newDiv.setAttribute("class", "blink");
+        // let el = document.getElementsByClassName("container-box");
+        // el[0].lastChild?.appendChild(newDiv);
+        // let el = document.getElementsByClassName("robot");
+        // console.log(el)
+        console.log("data", data);
+        if (data.content) {
+          isError.value = false;
 
-        messageQueue.push(data.content);
-        // processMessageQueue();
+          messageQueue.value.push(data.content);
+        }
+        processMessageQueue();
 
         scrollChatWindow();
       },
     });
   } catch (err) {
-    console.log(err);
+    console.log("err", err);
     abortFetch();
     // showSnackbar(err.message);
   }
 };
 const sendObject = (message: any) => {
+  isThinking.value = true;
   send(message);
+  setTimeout(() => {
+    container.value.scrollIntoView({ behavior: "smooth" });
+  }, 0);
 };
+const handleCleanChat = () => {
+  messageList.value = [];
+  isError.value = false;
+  isWatiing.value = false;
+};
+const handleStopReceive = () => {
+  isThinking.value = false;
+  isWatiing.value = false;
+  abortFetch();
+};
+emitter.on("openNewChat", handleCleanChat);
 emitter.on("sendMessage", sendObject);
+emitter.on("stopReceive", handleStopReceive);
+emitter.on("stopChat", handleStopReceive);
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
+@import "../styles/index.scss";
+
 .container-box {
   height: calc(100% - 20px);
   overflow-y: scroll;
@@ -253,7 +356,7 @@ emitter.on("sendMessage", sendObject);
   align-items: flex-start;
   background-color: #f9f9f9;
   background: #f9f9f9;
-  width: calc(100% - 250px);
+  width: calc(100% - 100px);
   margin: 0 auto;
   border-radius: 8px;
 }
@@ -264,6 +367,25 @@ emitter.on("sendMessage", sendObject);
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: flex-start;
+  text-align: left;
+  .text_content {
+    position: relative;
+    overflow: hidden;
+    width: 0;
+    font-size: 32px;
+    line-height: 34px;
+    font-family: "Courier New", Courier, monospace;
+    white-space: nowrap;
+    animation: width 2s steps(13) forwards;
+    &::after {
+      content: "";
+      position: absolute;
+      right: Opx;
+      height: 32px;
+      border-right: 1px solid #000000;
+      animation: showInfinite 0.5s infinite both;
+    }
+  }
 }
 .robot_content {
   padding: 10px;
@@ -271,5 +393,12 @@ emitter.on("sendMessage", sendObject);
 }
 .thinking {
   margin-top: 15px;
+}
+.result-streaming:after {
+  -webkit-animation: blink 1s steps(5, start) infinite;
+  animation: blink 1s steps(5, start) infinite;
+  content: "▋";
+  margin-left: 0.25rem;
+  vertical-align: baseline;
 }
 </style>

@@ -1,3 +1,4 @@
+
 <template>
   <div class="panel">
     <HeadBar></HeadBar>
@@ -19,6 +20,17 @@
 </template>
     
 <script setup lang='ts'>
+import { computed, watch } from "vue";
+// import { useStore } from "vuex";
+// const { state, getters, dispatch, commit } = useStore();
+// const chatListComputed = computed(() => getters["index/getTopicList"]);
+// watch(
+//   chatListComputed.value,
+//   (val) => {
+//     console.log("chatListComputed", val);
+//   },
+//   { immediate: true }
+// );
 const handleGoTo = (op: any) => {
   op === "discord"
     ? window.open("https://discord.gg/cQU4XYAtS")

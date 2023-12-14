@@ -4,7 +4,11 @@ import {
 import EN from './en-EN.json'
 import TW from './tw-TW.json'
 import JP from './jp-JP.json'
+import CN from './zh-CN.json'
 const messages = {
+    cn: {
+        ...CN
+    },
     en: {
         ...EN
     },
@@ -24,6 +28,9 @@ if (!currentLang) {
     }
     let lang = langString.slice(0, 2)
     switch (lang) {
+        case 'cn':
+            windowLang = 'cn'
+            break;
         case 'ja':
             windowLang = 'jp'
             break;

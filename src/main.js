@@ -4,6 +4,7 @@ import {
 import App from './App.vue'
 import './index.css'
 import 'element-plus/dist/index.css'
+import store from '@/store/index';
 import i18n from './lang'
 import router from '@/router'
 import {
@@ -27,4 +28,4 @@ let onlyUuid = uuidv4();
 if (!window.localStorage.getItem('script_uuid')) {
     window.localStorage.setItem('script_uuid', onlyUuid);
 }
-const app = createApp(App).use(i18n).use(router).use(VMdPreview).mount('#app')
+const app = createApp(App).use(i18n).use(router).use(store).use(VMdPreview).mount('#app')

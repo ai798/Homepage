@@ -4,16 +4,20 @@ import {
 } from "vue-router";
 import chatBase from '@/components/chat.vue'
 import homePage from '@/components/homePage.vue'
+import homePageLogin from '@/components/homePageLogin.vue'
 
 const history = createWebHashHistory();
 const router = createRouter({
     history,
     routes: [{
             path: '/',
-            component: homePage
+            redirect: '/home'
+        }, {
+            path: '/home',
+            component: homePageLogin
         },
         {
-            path: '/liaotian',
+            path: '/chat',
             component: chatBase
         }
     ]

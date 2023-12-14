@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-menu">
+  <div class="chat-menu" v-loading="onLoading">
     <div class="chat-opt">
       <ChatList @updateList="handleGetChatList" :list="chatList"></ChatList>
     </div>
@@ -11,21 +11,39 @@
     
 <script  lang='ts' setup>
 import { getChatList } from "@/api/index";
-import { ref } from "vue";
+import { computed, nextTick, onMounted, ref, watch } from "vue";
+import emitter from "@/utils/mitt";
+import { useStore } from "vuex";
+const { state, getters, dispatch, commit } = useStore();
 const chatList = ref([] as any);
+const onLoading = ref(false);
 const handleNewChat = () => {
   //create new chat
-  chatList.value.push({ topic: "One new chat" });
+  emitter.emit("openNewChat");
+  commit("index/SET_CURRENT_ITEM", {});
 };
 const userId = window.localStorage.getItem("script_uuid");
 const handleGetChatList = () => {
-  getChatList(userId).then((res) => {
-    chatList.value = res;
-  });
+  onLoading.value = true;
+  getChatList(userId)
+    .then((res) => {
+      chatList.value = res.payload?.conversation_list ?? [];
+      commit("index/SET_CHAT_LIST", res.payload.conversation_list);
+    })
+    .finally(() => {
+      onLoading.value = false;
+    });
 };
-getChatList(userId).then((res) => {
-  chatList.value = res;
+onMounted(() => {
+  chatList.value = state.topicList;
 });
+getChatList(userId).then((res) => {
+  if (res.payload.conversation_list) {
+    chatList.value = res.payload.conversation_list;
+    commit("index/SET_CHAT_LIST", res.payload.conversation_list);
+  }
+});
+emitter.on("refreshList", handleGetChatList);
 </script>
     
 <style lang="scss" scoped>

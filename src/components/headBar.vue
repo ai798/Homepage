@@ -105,6 +105,7 @@ const handleCommand = (command: string) => {
     background: rgba(0, 0, 0, 0.05);
   }
   .right-box {
+    cursor: pointer;
     .el-dropdown {
       line-height: 64px;
       margin: 0 10px;
