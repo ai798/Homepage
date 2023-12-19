@@ -16,10 +16,10 @@
           </span>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="jp">日本語</el-dropdown-item>
+              <el-dropdown-item command="ja">日本語</el-dropdown-item>
               <el-dropdown-item command="en"> English </el-dropdown-item>
-              <el-dropdown-item command="cn">简体中文</el-dropdown-item>
-              <el-dropdown-item command="fn">繁體中文</el-dropdown-item>
+              <el-dropdown-item command="zh-CN">简体中文</el-dropdown-item>
+              <el-dropdown-item command="zh-HK">繁體中文</el-dropdown-item>
             </el-dropdown-menu>
           </template>
         </el-dropdown>
@@ -42,10 +42,10 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 const { locale } = useI18n();
 const langSet: any = {
-  jp: "日本語",
+  ja: "日本語",
   en: "English",
-  cn: "简体中文",
-  fn: "繁體中文",
+  "zh-CN": "简体中文",
+  "zh-HK": "繁體中文",
 };
 const lang: any = ref("");
 lang.value = langSet[window.localStorage.getItem("lang") ?? "en"];

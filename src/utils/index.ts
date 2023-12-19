@@ -33,12 +33,14 @@ const { VITE_BASE_API } = useEnv();
 const service: AxiosInstance = axios.create({
   baseURL: VITE_BASE_API,
   timeout: 10 * 60 * 1000, // 请求超时时间
-  headers: { "Content-Type": ContentTypeEnum.JSON },
+  headers: {
+    "Content-Type": ContentTypeEnum.JSON,
+    "Accept-Language": window.localStorage.getItem("lang"),
+  },
 });
 
 service.interceptors.request.use((config) => {
   const getToken = window.localStorage.getItem("script_pro_token");
-  console.log("getToken", getToken);
   // @ts-ignore
   const { cancelSame, loading } = config.requestOptions;
 
@@ -61,14 +63,13 @@ service.interceptors.response.use(
       response.status === ResultEnum.NOLOGIN ||
       response.status === ResultEnum.EXPIRE
     ) {
-      console.log("123123");
       ElMessage.error({
         customClass: "error",
         message: "No log in",
       });
       setTimeout(() => {
         window.location.replace("/");
-      },1500);
+      }, 1500);
       return Promise.reject(response);
     } else {
       // addAjaxErrorLog(response, data.message);
@@ -77,7 +78,6 @@ service.interceptors.response.use(
   },
   (err) => {
     if (err.code === "ERR_CANCELED") return;
-
     setErrorMessage(err.response);
     return Promise.reject(err.response);
   }
@@ -106,7 +106,6 @@ const request = {
     return new Promise((resolve, reject) => {
       service({ method, url, ...data, requestOptions: options })
         .then((res) => {
-          console.log("res", res);
           resolve(res as unknown as Promise<T>);
         })
         .catch((e: Error | AxiosError) => {

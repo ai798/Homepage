@@ -23,7 +23,7 @@
       ></v-md-preview>
     </div>
 
-    <div ref="container"></div>
+    <div ref="container" class="ref-container"></div>
     <div v-if="isThinking" class="is_inputing_conntent"></div>
 
     <slot name="option"></slot>
@@ -40,7 +40,6 @@ import { onMounted, reactive, ref, unref, watch } from "vue";
 import emitter from "@/utils/mitt";
 import { useStore } from "vuex";
 const ApplicationJsonType = "application/json";
-const fetchingResponse = ref(false);
 const isWatiing = ref(false);
 const isThinking = ref(false);
 const isError = ref(false);
@@ -54,9 +53,11 @@ const enableWebSearch = ref(false);
 const { state, getters, dispatch, commit } = useStore();
 
 const refreshPage = () => {
-  setTimeout(() => {
-    container.value.scrollIntoView({ behavior: "smooth" });
-  }, 0);
+  let height =
+    document.getElementsByClassName("container-box")[0]?.scrollHeight;
+
+  // container.value.scrollTo({ top: height, behavior: "smooth" });
+  scrollToBottom();
 };
 const isUrl = (str: any) => {
   var v = new RegExp(
@@ -79,7 +80,7 @@ const props = defineProps({
     require: true,
   },
 });
-const emits = defineEmits(["done","error"]);
+const emits = defineEmits(["done", "error"]);
 watch(
   messageList.value,
   (val) => {
@@ -89,6 +90,23 @@ watch(
   },
   { immediate: true }
 );
+var delay = 5; //in milliseconds
+var scroll_amount = 30; // in pixels
+var interval: any;
+const scroller = () => {
+  var old = document.getElementsByClassName("container-box")[0]?.scrollTop; //保存当前滚动条到顶端的距离
+  document.getElementsByClassName("container-box")[0].scrollTop +=
+    scroll_amount; //让滚动条继续往下滚动
+  if (document.getElementsByClassName("container-box")[0].scrollTop == old) {
+    //到底部后就无法再增加scrollTop的值
+    console.log("123123");
+    clearInterval(interval);
+  }
+};
+const scrollToBottom = () => {
+  interval = setInterval(scroller, delay);
+};
+
 watch(
   props.conversation,
   (e) => {
@@ -96,7 +114,16 @@ watch(
       isError.value = false;
       messageList.value = [];
       messageList.value = messageList.value.concat(props.conversation.message);
-      container.value.scrollIntoView({ behavior: "smooth" });
+      scrollToBottom();
+
+      // setTimeout(() => {
+      //   let height =
+      //     document.getElementsByClassName("container-box")[0]?.scrollHeight;
+
+      //   console.log("height", height);
+      //   container.value.scrollHeight = height;
+      // }, 0);
+      console.log("container.value", container.value);
       // grab.value.scrollIntoView({ behavior: "smooth" });
     }
   },
@@ -128,7 +155,11 @@ const processMessageQueue = () => {
     wordIndex++;
     console.log("wordIndex->", wordIndex);
     isThinking.value = false;
-    container.value.scrollIntoView({ behavior: "smooth" });
+    let height =
+      document.getElementsByClassName("container-box")[0]?.scrollHeight;
+
+    // container.value.scrollTo({ top: height, behavior: "smooth" });
+    scrollToBottom();
     if (wordIndex === messageQueue.value.length) {
       emits("done");
       clearInterval(intervalId);
@@ -153,7 +184,6 @@ const send = (message: any) => {
     // addConversation(props.conversation);
   }
   messageList.value.push(...message.message);
-  fetchingResponse.value = true;
   isWatiing.value = true;
 
   fetchReply(message);
@@ -169,7 +199,6 @@ const abortFetch = () => {
   if (ctrl.value) {
     ctrl.value.abort();
   }
-  fetchingResponse.value = false;
 };
 
 const fetchReply = async (message: any) => {
@@ -220,6 +249,7 @@ const fetchReply = async (message: any) => {
       method: "POST",
       headers: {
         accept: "application/json",
+        "Accept-Language": window.localStorage.getItem("lang"),
         "Content-Type": "application/json",
         Authorization: `Bearer ${getToken}`,
       },
@@ -238,7 +268,6 @@ const fetchReply = async (message: any) => {
       },
       onclose() {
         if (ctrl.value.signal.aborted === true) {
-          fetchingResponse.value = false;
           clearInterval(intervalId);
           emits("done", data.conversation_id);
           return;
@@ -321,18 +350,23 @@ const sendObject = (message: any) => {
   isThinking.value = true;
   send(message);
   setTimeout(() => {
-    container.value.scrollIntoView({ behavior: "smooth" });
+    let height =
+      document.getElementsByClassName("container-box")[0]?.scrollHeight;
+
+    // container.value.scrollTo({ top: height, behavior: "smooth" });
   }, 0);
+  scrollToBottom();
 };
 const handleCleanChat = () => {
+  abortFetch();
   messageList.value = [];
   isError.value = false;
   isWatiing.value = false;
 };
 const handleStopReceive = () => {
+  abortFetch();
   isThinking.value = false;
   isWatiing.value = false;
-  abortFetch();
 };
 emitter.on("openNewChat", handleCleanChat);
 emitter.on("sendMessage", sendObject);
@@ -342,7 +376,13 @@ emitter.on("stopChat", handleStopReceive);
 
 <style lang="scss">
 @import "../styles/index.scss";
-
+.ref-container {
+  position: absolute;
+  height: 20px;
+  bottom: 0;
+  // background-color: red;
+  width: 20px;
+}
 .container-box {
   height: calc(100% - 20px);
   overflow-y: scroll;

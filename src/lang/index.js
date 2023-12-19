@@ -2,8 +2,8 @@ import {
     createI18n
 } from 'vue-i18n';
 import EN from './en-EN.json'
-import TW from './tw-TW.json'
-import JP from './jp-JP.json'
+import TW from './zh-HK.json'
+import JP from './ja-JA.json'
 import CN from './zh-CN.json'
 const messages = {
     cn: {

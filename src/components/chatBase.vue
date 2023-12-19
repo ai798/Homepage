@@ -120,7 +120,6 @@ const conversation = reactive({
   temperature: 0.7,
   top_p: 1,
   openaiApiKey: null,
-  lang: "",
   message: [] as any,
   conversation_id: state.index.conversationId,
   frugalMode: false,
@@ -158,7 +157,6 @@ const onSendMessage = (opt?: any, messageType?: any) => {
 
   isLoading.value = true;
   isGetHistory.value = false;
-  conversation.lang = locale.value;
   conversation.conversation_id = state.index.conversationId;
   if (opt) {
     conversation.message = [
